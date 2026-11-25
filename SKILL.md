@@ -1,6 +1,6 @@
 ---
 name: blueprint
-description: Turn a floor plan, a pen sketch or a few reference images into a photoreal 3D house in Blender, then a film of it building itself. Every footing, post, board, tatami mat, shoji strip and roof panel is its own object, stills are matched against references, and the film opens on the input itself, assembles the house part by part on top of it, brings it to life and walks inside. Use when someone wants a plan, a sketch, a brochure page or a description of a house, an apartment, a villa or a room turned into 3D, renders, a walk-through, a "build" video or an architecture visualisation.
+description: Turn a floor plan, a pen sketch or a few reference images into a photoreal 3D house in Blender, then a film of it building itself. Every footing, post, board, tatami mat, shoji strip and roof panel is its own object, stills are matched against references, and the film opens on the input itself, assembles the house part by part on top of it, brings it to life and walks inside. Use when someone wants a plan, a sketch, a brochure page or a description of a house, an apartment, a villa or a room turned into 3D, renders, a walk-through, a "build" video or an architecture visualisation. 한국어 요청도 이 스킬이다 — "스케치로 3D 집 만들어줘", "분양 평면도(이미지)로 3D 아파트", "참고 사진처럼 집 지어줘", "집이 조립되는 영상", "도면 위에 집이 지어지는 영상", "건축 조립 애니메이션", "평면도로 집 안 걸어 들어가는 영상", "3D 집 렌더와 내레이션 영상". DWG/DXF 도면으로 실내 렌더 한 장만 만드는 일은 cad-interior-render가 맡는다.
 ---
 
 # Blueprint
