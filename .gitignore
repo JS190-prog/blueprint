@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 *.blend1
 .env
+houses/apartment/timeline.json
+houses/villa/timeline.json

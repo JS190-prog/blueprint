@@ -1,7 +1,9 @@
 """Put the sound under a rendered film: a music track, the film's own action sounds and real ambience, mixed and muxed.
 
-    python tools/music.py --film simulator-out/airport-film.mp4 --score sims/airport-shared/score.py --out simulator-out/airport-final.mp4
-        [--ambience apron.wav --ambience jets.wav] [--music track.mp3] [--plan docs/music_plan.json] [--style "..."] [--offset 0]
+    python tools/music.py --film blueprint-out/courtyard/silent.mp4 --score houses/courtyard/score.py --out blueprint-out/courtyard/final.mp4
+        [--ambience apron.wav --ambience jets.wav] [--music track.mp3] [--plan houses/courtyard/music_plan.json] [--style "..."] [--offset 0]
+
+The music track and the temporary sound file go next to --out.
 
 Where the music comes from, first match wins:
 1. --music: a track you already have.
@@ -28,7 +30,6 @@ sys.path.insert(0, ROOT)
 from sfx.__main__ import load_cues  # noqa: E402
 
 FF = os.environ.get("FFMPEG", "ffmpeg")
-OUT = os.environ.get("SIMULATOR_OUT", "simulator-out")
 STYLE = "modern minimal electronic, clean plucks, warm sub bass, steady four-on-the-floor, glassy pads, confident product film, 110 bpm"
 NO_GAPS = ["silence", "pauses", "breaks", "stops", "fade out", "slow", "vocals", "sparse"]
 
@@ -114,13 +115,14 @@ def main():
     tl = json.load(open(timeline, encoding="utf-8"))
     dur = tl["duration"]
     stem = os.path.splitext(os.path.basename(a.out))[0]
-    os.makedirs(OUT, exist_ok=True)
+    out_dir = os.path.dirname(os.path.abspath(a.out))
+    os.makedirs(out_dir, exist_ok=True)
 
     music = a.music
     if not music:
         key = api_key()
         if key:
-            music = os.path.join(OUT, f"{stem}_music.mp3")
+            music = os.path.join(out_dir, f"{stem}_music.mp3")
             eleven(json.load(open(a.plan, encoding="utf-8")) if a.plan else plan_from_timeline(tl, a.style), music, key)
             print("music:", music)
         else:
@@ -130,7 +132,7 @@ def main():
         if g:
             print("WARNING: silence in the track at", ", ".join(g), "s from the offset; make a new one before posting")
 
-    fx = os.path.join(OUT, f"{stem}_fx.wav")
+    fx = os.path.join(out_dir, f"{stem}_fx.wav")
     env = dict(os.environ, BED="" if music else "1")
     subprocess.run([sys.executable, os.path.join(ROOT, "run_sfx.py"), a.score, "--timeline", timeline, "--out", fx], check=True, env=env)
     level = lufs(fx)

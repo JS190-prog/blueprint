@@ -1,4 +1,5 @@
-"""Download the CC0 assets the apartment scene uses from Poly Haven into ~/.blueprint/polyhaven/<id>/ (skips what is there).
+"""Download the CC0 assets the apartment scene uses from Poly Haven into ~/.blueprint/polyhaven/<id>/ and merge them
+into ~/.blueprint/polyhaven/assets.json (the other houses' entries stay; anything already on disk is skipped).
 
 Models come as glTF 2k with their textures, textures as 2k jpg maps (diffuse, GL normal, roughness), the sky as a 2k HDR.
 Run: python houses/apartment/fetch_assets.py
@@ -29,7 +30,8 @@ def files(i):
     return json.loads(urllib.request.urlopen(urllib.request.Request(f"https://api.polyhaven.com/files/{i}", headers=UA), timeout=60).read())
 
 
-meta = {}
+manifest = os.path.join(ROOT, "assets.json")
+meta = json.load(open(manifest)) if os.path.exists(manifest) else {}
 for i in MODELS:
     f = files(i).get("gltf", {}).get("2k", {}).get("gltf")
     if not f:
@@ -61,5 +63,5 @@ for i in HDRI:
     get(u, p)
     meta[i] = p
     print("hdri", i)
-json.dump(meta, open(os.path.join(ROOT, "assets.json"), "w"), indent=1)
+json.dump(meta, open(manifest, "w"), indent=1)
 print("done")
