@@ -14,6 +14,8 @@ Where the music comes from, first match wins:
 
 The action sounds come from --score (any cue sheet with score(mix, tl), rendered by run_sfx.py), brought to -23.4 LUFS
 and lifted --fx-db over that. Ambience files (tools/sfx_fetch.py gets CC0 ones) loop under everything at --amb-lufs.
+--narration lines.json adds a voice-over from a local Qwen3-TTS clone (tools/voice.py), each line on the film's
+clock, with the music and action sounds ducked under it.
 The video stream is copied as it is. The key is never printed.
 """
 import argparse
@@ -28,6 +30,8 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 
 from sfx.__main__ import load_cues  # noqa: E402
+from tools import voice  # noqa: E402
+from tools.voice import lufs  # noqa: E402
 
 FF = os.environ.get("FFMPEG", "ffmpeg")
 STYLE = "modern minimal electronic, clean plucks, warm sub bass, steady four-on-the-floor, glassy pads, confident product film, 110 bpm"
@@ -87,12 +91,6 @@ def gaps(path, start, dur):
     return re.findall(r"silence_start: ([\d.]+)", err)
 
 
-def lufs(path):
-    err = subprocess.run([FF, "-hide_banner", "-i", path, "-af", "ebur128", "-f", "null", "-"], capture_output=True, text=True).stderr
-    m = re.findall(r"I:\s+(-?[\d.]+) LUFS", err)
-    return float(m[-1]) if m else None
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--film", required=True, help="the rendered video (no sound needed)")
@@ -108,6 +106,7 @@ def main():
     ap.add_argument("--music-lufs", type=float, default=-15.0, help="the music's level in the mix (default -15)")
     ap.add_argument("--fx-db", type=float, default=4.0, help="the action sounds over -23.4 LUFS (default +4 dB)")
     ap.add_argument("--fade", type=float, default=0.6, help="fade-out length in seconds")
+    ap.add_argument("--narration", help="voice-over lines JSON, spoken by the local Qwen voice (see tools/voice.py)")
     a = ap.parse_args()
 
     cues = load_cues(a.score)
@@ -154,8 +153,18 @@ def main():
         chains.append(f"[{n}:a]atrim=0:{dur},asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo,loudnorm=I={a.amb_lufs}:TP=-6[a{k}]")
         labels.append(f"[a{k}]")
         n += 1
+    bed = f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0"
+    if a.narration:
+        placed = voice.place(json.load(open(a.narration, encoding="utf-8")), tl)
+        vo = os.path.join(out_dir, f"{stem}_vo.wav")
+        for w in voice.track(placed, voice.synth([s for _, s in placed], voice.config(), os.path.join(out_dir, "vo_cache")), dur, vo):
+            print("WARNING: narration", w)
+        args += ["-i", vo]
+        chains += [f"{bed},aformat=channel_layouts=stereo[bed]", f"[{n}:a]asplit=2[vo][key]",
+                   "[bed][key]sidechaincompress=threshold=0.02:ratio=4:attack=30:release=500[duck]"]
+        bed = "[duck][vo]amix=inputs=2:normalize=0"
     fade = max(0.0, dur - a.fade)
-    chains.append(f"{''.join(labels)}amix=inputs={len(labels)}:normalize=0,alimiter=limit=0.9:level=false,afade=t=out:st={fade:.2f}:d={a.fade}[a]")
+    chains.append(f"{bed},alimiter=limit=0.9:level=false,afade=t=out:st={fade:.2f}:d={a.fade}[a]")
     args += ["-filter_complex", ";".join(chains), "-map", "0:v", "-map", "[a]", "-c:v", "copy", "-ar", "48000", "-ac", "2",
              "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-t", f"{dur}", a.out]
     subprocess.run(args, check=True)

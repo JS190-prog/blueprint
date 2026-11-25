@@ -17,6 +17,8 @@ house exists: the scene is a Python script that Claude writes, renders, looks at
 - **Python 3** with `pillow` (the counter overlay) and, for reading a plan image, `opencv-python` and `numpy`.
 - **ffmpeg** on PATH (or `FFMPEG=/path/to/ffmpeg`).
 - **Optional:** `ELEVENLABS_API_KEY` for the music. Without it `tools/music.py` mixes the action sounds alone.
+- **Optional, for a voice-over:** a local Qwen3-TTS voice clone, set up in `~/.blueprint/tts.json` (`python`, `runner`,
+  `ref_wav`, `ref_text`, `takes`) or the `QWEN_TTS_*` variables; see `tools/voice.py`. No TTS service is called.
 
 ## First run
 
@@ -78,6 +80,10 @@ a quick preview of the whole film.
 8. **Score it on the film's clock.** `film.py` writes `timeline.json` with every landing, the wave, the lights and the
    dive; `score.py` puts a sound on each in its own material (stone, hollow wood, paper, metal). Find the music
    track's swell and pass `--offset` so it lands on the reveal.
+   For a voice-over, write one sentence per line pinned to the film's moments
+   (`houses/apartment/narration.json`: `{"at": "dive", "dt": 0.6, "say": "..."}` or `{"t": 0.3, ...}`) and pass
+   `--narration`: each line is spoken by the local Qwen voice, cached, brought to -17 LUFS, and the music and action
+   sounds duck under it. A warning names any line that runs into the next one; shorten it or move it.
 9. **Check frames, not code.** Contact sheets every second of the film at low resolution before the long render.
 
 ## Rules that cost a day each to learn
