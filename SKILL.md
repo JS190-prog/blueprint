@@ -22,6 +22,8 @@ house exists: the scene is a Python script that Claude writes, renders, looks at
   (`blender_search_assets`, `blender_get_asset`, `blender_acquire_asset`); without them the furniture is modelled.
 - **Optional, for a voice-over:** a local Qwen3-TTS voice clone, set up in `~/.blueprint/tts.json` (`python`, `runner`,
   `ref_wav`, `ref_text`, `takes`) or the `QWEN_TTS_*` variables; see `tools/voice.py`. No TTS service is called.
+- **Optional, on a laptop:** `~/.blueprint/render.json` `{"before": [...], "after": [...]}`, two commands (argument
+  lists) that switch the maker's cooling profile to performance and back; see "Fit the card".
 
 ## First run
 
@@ -102,6 +104,12 @@ a quick preview of the whole film.
 7. **Fit the card.** Motion blur on thousands of animated parts runs an 8 GB card out of memory. Bake bevel modifiers
    into the meshes before keying (Cycles treats a modified mesh as deforming), and use decimated copies of heavy
    scanned plants (`make_tree_lod.py`: Poly Haven conifers are 2-7 million polygons each).
+   On a laptop, a balanced cooling profile can cut the GPU's power limit and keep it cut once the card reaches its
+   target temperature (an RTX 5050 laptop went from 40 W to 21 W for the rest of the render, frames took three times
+   as long, and a performance profile never cut it). If `~/.blueprint/render.json` exists, run its `before` command
+   ahead of any render longer than a few minutes and its `after` command when the render ends, also when it fails or
+   is stopped. Watch the first minutes with `nvidia-smi --query-gpu=power.draw,enforced.power.limit,temperature.gpu
+   --format=csv -l 10`.
 8. **Score it on the film's clock.** `film.py` writes `timeline.json` with every landing, the wave, the lights and the
    dive; `score.py` puts a sound on each in its own material (stone, hollow wood, paper, metal). Find the music
    track's swell and pass `--offset` so it lands on the reveal.
