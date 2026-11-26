@@ -1,6 +1,6 @@
 ---
 name: blueprint
-description: Turn a floor plan, a pen sketch or a few reference images into a photoreal 3D house in Blender, then a film of it building itself. Every footing, post, board, tatami mat, shoji strip and roof panel is its own object, stills are matched against references, and the film opens on the input itself, assembles the house part by part on top of it, brings it to life and walks inside. Use when someone wants a plan, a sketch, a brochure page or a description of a house, an apartment, a villa or a room turned into 3D, renders, a walk-through, a "build" video or an architecture visualisation. 한국어 요청도 이 스킬이다 — "스케치로 3D 집 만들어줘", "분양 평면도(이미지)로 3D 아파트", "참고 사진처럼 집 지어줘", "집이 조립되는 영상", "도면 위에 집이 지어지는 영상", "건축 조립 애니메이션", "평면도로 집 안 걸어 들어가는 영상", "3D 집 렌더와 내레이션 영상". DWG/DXF 도면으로 실내 렌더 한 장만 만드는 일은 cad-interior-render가 맡는다.
+description: Turn a floor plan (an image or a DWG/DXF drawing), a pen sketch or a few reference images into a photoreal 3D house in Blender, then a film of it building itself. Every footing, post, board, tatami mat, shoji strip and roof panel is its own object, stills are matched against references, and the film opens on the input itself, assembles the house part by part on top of it, brings it to life and walks inside. Use when someone wants a plan, a sketch, a brochure page or a description of a house, an apartment, a villa or a room turned into 3D, renders, a walk-through, a "build" video or an architecture visualisation. 한국어 요청도 이 스킬이다 — "스케치로 3D 집 만들어줘", "분양 평면도(이미지)로 3D 아파트", "참고 사진처럼 집 지어줘", "집이 조립되는 영상", "도면 위에 집이 지어지는 영상", "건축 조립 애니메이션", "평면도로 집 안 걸어 들어가는 영상", "3D 집 렌더와 내레이션 영상", "DWG·DXF 도면으로 조립 영상", "CAD 평면도로 집이 지어지는 영상", "조경 도면으로 정원·공원 3D 영상". DWG/DXF 도면으로 실내 렌더 한 장만 만드는 일은 cad-interior-render가 맡는다.
 ---
 
 # Blueprint
@@ -14,9 +14,12 @@ house exists: the scene is a Python script that Claude writes, renders, looks at
 
 - **Blender 4.2 or newer** on PATH as `blender` (tested on 5.2 with Cycles on an NVIDIA GPU; any OptiX or CUDA card
   works, 8 GB is enough with the steps in "Fit the card").
-- **Python 3** with `pillow` (the counter overlay) and, for reading a plan image, `opencv-python` and `numpy`.
+- **Python 3** with `pillow` (the counter overlay) and, for reading a plan image, `opencv-python` and `numpy`; for a
+  DWG/DXF drawing also `ezdxf` (a DWG goes through ODA File Converter to DXF first).
 - **ffmpeg** on PATH (or `FFMPEG=/path/to/ffmpeg`).
 - **Optional:** `ELEVENLABS_API_KEY` for the music. Without it `tools/music.py` mixes the action sounds alone.
+- **Optional, for furniture that fits the drawing:** the MCPWorld Blender connector's asset tools
+  (`blender_search_assets`, `blender_get_asset`, `blender_acquire_asset`); without them the furniture is modelled.
 - **Optional, for a voice-over:** a local Qwen3-TTS voice clone, set up in `~/.blueprint/tts.json` (`python`, `runner`,
   `ref_wav`, `ref_text`, `takes`) or the `QWEN_TTS_*` variables; see `tools/voice.py`. No TTS service is called.
 
@@ -57,6 +60,15 @@ a quick preview of the whole film.
    model draws a 14 m square 745 px wide and 670 px tall). A plan: find the scale bar, trace the wall fill, and read
    doors and windows by hand on a metre grid (`grid_view.py`); automatic opening detection puts doors across rooms.
    Write the rooms, walls, openings and furniture down as numbers before any geometry.
+   A **DWG/DXF drawing** is read, not traced, with `tools/dxf_read.py` (metres, the drawing's own axes and origin):
+   `layers` names the wall, door, window, furniture, planting and paving layers; `walls --walls <layers> --seal
+   <window and door layers>` writes the walls as non-overlapping rectangles and the enclosed floor in the shape of
+   `houses/apartment/walls.json` (look at its `--debug` picture); `dump --layers ...` lists every block insert
+   (furniture, trees), outline, hatch (paving, beds), arc, text and dimension in metres, and `plan.json` is written
+   from that list. What the drawing does not say (ceiling height, sill and head heights, furniture heights, the sun,
+   the cameras) goes into `plan.json` with one line of reason each, and anything that is the person's call (storey
+   height, a named finish) is asked before building. Read the notes against use: a wide opening onto a balcony is a
+   door down to the floor even when the sheet says "window height 1,200" for every opening.
 2. **Pin the look with 3-4 references.** Write image-model prompts for the views you will render (one high view, one
    room, one detail) and let the person generate them. They decide the materials, the light and the furniture.
 3. **Build it the way a carpenter would.** Footings, sills, joists, posts, plates, tie beams, rafters, roof panels,
@@ -64,9 +76,22 @@ a quick preview of the whole film.
    the furniture, the garden. Each one a separate object, tagged with its stage (`K.STAGE[0] = "frame"`): the film
    flies them in by stage and the counter counts them. Address repeated wings by a side and (u, v) coordinates so one
    function builds all four and the hips and valleys land on the diagonals.
+   Loose furniture whose shape makes it real (sofa, bed, dining set, lamps, plants) can come from the MCPWorld asset
+   tools instead: search in English with the size range, read a candidate before taking it (a buttoned leather
+   Chesterfield does not belong in a new flat), acquire at 2k for what is near the camera and 1k for the rest, and
+   place it with `K.fitted(path, x, y, (w, d, h), yaw)`. It keeps the model's proportions, matches the long side and
+   warns when any axis misses by more than 5 cm: then take another asset, never squeeze this one. Built-ins sized by
+   the drawing (wardrobes, kitchen runs and tops) stay in code. Record each asset's id, file, error, licence and
+   source in `plan.json`, and copy the files next to the renders, not into this folder.
 4. **Render stills next to the references and fix what differs.** Low resolution first (960x540, 32 samples), the
    reference beside the render, one list of differences, then fix and render again. Look for things that poke
    through: a beam end through a roof reads as a dot from above, a rock through a pool floor as a stain.
+   When the stills are for someone else, have them judged by an agent that did not build them: it gets only the
+   renders, the references and the plan picture, lists for each view what falls short with a number and a severity
+   (high: a viewer sees at once it is not a photo; low: only on close inspection) and scores each view 0-100, and it
+   never says how to fix. Fix the high ones that are a value (light, camera, colour) or a small change of form, leave
+   cloth folds and extra props for later, ask the person where a finding argues with the drawing, and stop after two
+   rounds or when only low findings are left. After every camera change look at the frame's outer 15% again.
 5. **Pick the light last, and show both.** Blue hour reads moody and can read gloomy; a bright day after rain (a low
    sun, wet boards, a pale sky) reads open. `build.py --look day|dusk` switches the whole scene.
 6. **Film it building itself.** Open on the input: the sketch as a textured plane mapped so its plan is the real

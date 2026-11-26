@@ -550,8 +550,16 @@ _variants = {}
 
 
 def _import(mid):
+    """A Poly Haven id from assets.json, or a model file's path (.glb/.gltf/.obj/.fbx)."""
+    path = ASSETS.get(mid, mid)
     before = set(bpy.data.objects)
-    bpy.ops.import_scene.gltf(filepath=ASSETS[mid])
+    ext = os.path.splitext(path)[1].lower()
+    if ext == ".obj":
+        bpy.ops.wm.obj_import(filepath=path)
+    elif ext == ".fbx":
+        bpy.ops.import_scene.fbx(filepath=path)
+    else:
+        bpy.ops.import_scene.gltf(filepath=path)
     return [o for o in bpy.data.objects if o not in before]
 
 
@@ -567,7 +575,7 @@ def model_src(mid, hook=None):
     if mid in _models:
         return _models[mid]
     new = _import(mid)
-    coll = bpy.data.collections.new("src_" + mid)
+    coll = bpy.data.collections.new("src_" + os.path.basename(mid))
     for o in new:
         for c in list(o.users_collection):
             c.objects.unlink(o)
@@ -643,6 +651,31 @@ def place_variant(mid, x, y, z=0.0, yaw=0.0, height=None, k=None, scale=1.0, hoo
     src, mn, mx = vs[random.randrange(len(vs)) if k is None else k % len(vs)]
     s = height / (mx.z - mn.z) if height else scale
     return _instance(mid, src, mn, mx, x, y, z, yaw, s)
+
+
+FITS = []
+
+
+def fitted(path, x, y, size, yaw=0.0, z=0.0, hook=None, tol=0.05):
+    """A downloaded model (the MCPWorld asset tools, or any glTF/OBJ/FBX) fitted to a drawing's footprint, placed like place().
+
+    size = (width along x, depth along y, height) in metres before yaw; a glTF model faces -y, so yaw turns its front.
+    One scale for all three axes matches the long side, and the model turns 90 degrees when its long side runs the
+    other way: a poor match shows as an error, never as a stretched sofa. Each fit is kept in FITS; an axis more than
+    tol off prints a warning, and the asset is swapped or the size in plan.json reconsidered, not squeezed."""
+    src, mn, mx = model_src(path, hook)
+    sx, sy, sz = mx - mn
+    w, d, h = size
+    turn = (sy > sx) != (d > w)
+    if turn:
+        sx, sy = sy, sx
+    s = w / sx if w >= d else d / sy
+    name = os.path.splitext(os.path.basename(path))[0]
+    err = [round((g - t) * 100, 1) for g, t in zip((sx * s, sy * s, sz * s), size)]
+    FITS.append({"file": os.path.basename(path), "at": [x, y], "scale": round(s, 4), "rotated_90": turn, "error_cm": err})
+    if max(map(abs, err)) > tol * 100:
+        print(f"WARNING fit {name}: off by {err} cm (w, d, h), more than {tol * 100:.0f} cm")
+    return _instance(name, src, mn, mx, x, y, z, yaw + (90 if turn else 0), s)
 
 
 def recolor_leaves(objs, hue=0.0, sat=1.4, value=1.0, match=("leaf", "leaves", "foliage", "twig")):

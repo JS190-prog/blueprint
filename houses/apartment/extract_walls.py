@@ -11,9 +11,13 @@ Run: python houses/apartment/extract_walls.py
 """
 import json
 import os
+import sys
 
 import cv2
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from tools.dxf_read import to_rects  # noqa: E402  (one rectangle cover for plans and drawings)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.environ.get("BLUEPRINT_PLAN", os.path.join(HERE, "plan.png"))
@@ -44,27 +48,6 @@ for i in range(1, n):
     if stats[i, cv2.CC_STAT_AREA] >= 120:
         keep[lab == i] = 1
 mask = keep
-
-
-def to_rects(m, min_side=3):
-    """Exact rectangle cover of a binary mask: runs per row, merged down while the same run repeats."""
-    out = []
-    live = {}
-    for y in range(m.shape[0] + 1):
-        runs = set()
-        if y < m.shape[0]:
-            xs = np.nonzero(m[y])[0]
-            if len(xs):
-                br = np.nonzero(np.diff(xs) > 1)[0]
-                starts = np.r_[xs[0], xs[br + 1]]
-                ends = np.r_[xs[br] + 1, xs[-1] + 1]
-                runs = set(zip(starts.tolist(), ends.tolist()))
-        for r in list(live):
-            if r not in runs:
-                out.append((r[0], live.pop(r), r[1], y))
-        for r in runs:
-            live.setdefault(r, y)
-    return [r for r in out if r[2] - r[0] >= min_side and r[3] - r[1] >= min_side]
 
 
 def to_m(px, py):
