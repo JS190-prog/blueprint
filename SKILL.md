@@ -45,6 +45,9 @@ python "$SKILL_DIR/houses/courtyard/fetch_assets.py"
 Each house has `build.py` (the scene, stills), `film.py` (the film), `score.py` (the action sounds on the film's
 timeline) and `music_plan.json` (an ElevenLabs composition plan). Copy the closest one for a new house.
 
+A fourth template, **`houses/park/`**, builds a neighbourhood park from its landscape sheets (planting, facilities,
+paving), see "A park from landscape drawings" below.
+
 ```
 blender -b --factory-startup -P houses/courtyard/build.py -- tatami engawa corner --samples 192 --res 1920x1080
 blender -b --factory-startup -P houses/courtyard/film.py -- --res 1920x1080 --samples 64
@@ -119,7 +122,52 @@ a quick preview of the whole film.
    sounds duck under it. A warning names any line that runs into the next one; shorten it or move it.
 9. **Check frames, not code.** Contact sheets every second of the film at low resolution before the long render.
 
+## A park from landscape drawings
+
+A landscape set comes as several sheets (planting, facilities, paving) over a shared base drawing (an xref). They are
+read together into one scene, not one stage per sheet.
+
+1. **DWG to DXF** with ODA File Converter (`ODAFileConverter.exe <in> <out> ACAD2018 DXF 0 1 "*.dwg"`), xrefs too.
+2. **Clean the drawing into `site.json`** with `tools/site_prep.py site.config.json --out site.json --svg plan.svg
+   --png preview.png`. The config, with a reason on every value, says:
+   - the sheets and the xref;
+   - the unit, when the xref has no `$INSUNITS`;
+   - the window: the park only. A second copy of a plan (an answer sheet, a revision) is cut out here;
+   - the layers that are notes;
+   - which layers, blocks and sheets are curb, paving, hedge, shrub, groundcover, tree, facility;
+   - the quantity table's layer, and overrides for rows whose symbol is not drawn, matched by count.
+
+   It merges the sheets and drops every text, so no place name survives. It places inserts by their bbox centre (a
+   play structure's insert point can lie outside the window). It reads species and heights from the quantity table.
+   It writes `zones`: the regions the curbs close off, each `planted`, `hatched` or `open`. Its `selftest` (`site_prep.py selftest`) checks
+   the xref, the excluded copy, the legend and that no text leaks. Check that the tree count per species matches the
+   table, and grep the outputs for place names before showing anyone.
+3. **Say what each zone is in `look.json`**:
+   - `kinds` sets the default per kind;
+   - `zones` overrides by id (a hatched play area is rubber, not pavers), each with its centre and a reason, because
+     the ids change when `site.json` is rebuilt.
+
+   A hatch on a paving sheet is paving. It is never a bed.
+4. **Assets.** A manifest gives each species a model (a decimated `.blend` LOD, scaled to the table's H), the
+   texture maps and an HDRI. Facilities come from `facilities.py` and `facility_types.json`: one type per block,
+   built to the block's own outline (rounded outlines round play equipment are safety zones, not pads).
+5. **Stills.** `blender -b --factory-startup -P houses/park/build.py -- --site site.json --look look.json --assets
+   manifest.json --shots top,hero,play --res 960x540 --samples 32`. `top` is an ortho camera at 18 px/m that matches
+   a 1920x1080 plan drawing of the same window; change `film_pose`'s `FILM_A` and `top()` together if your drawing
+   frame differs. The ground beyond the park sinks to near-black, so no horizon or slab edge shows.
+6. **Film.** Add `--film --fps 60 --samples 64 --res 1920x1080`:
+   - **The shot:** the camera starts as a 3 km telephoto, equal to the top camera to within 3 px. It holds until
+     `MOVE[0]`, then comes down and round to the oblique view while the field of view widens.
+   - **Output:** `film/f####.png` (frame 0 and `MOVE[0]..MOVE[1]`), plus `film/film.json` for the compositor.
+   - **Speed:** only the camera moves (persistent data), so a 1080p frame takes about 5 s on an 8 GB laptop card,
+     and a 10 s film at 60 fps about 40 minutes.
+   - **Compositing:** the line drawing turning into the 3D is done in compositing, over the static first frame. For
+     example, a wipe with the plan's lines lingering behind its edge, ending in an alpha fade to whatever comes next.
+
 ## Rules that cost a day each to learn
+
+- **Specular keeps far ground grey.** A dark ground still reads grey at a grazing angle because it reflects the sky.
+  Fade the specular out with the colour.
 
 - **Tone mapping:** Khronos PBR Neutral. AgX turns a sunset orange into beige.
 - **Glass:** thin, Transparent mixed with Glossy by Fresnel, no refraction. Smooth shading on an unbevelled box

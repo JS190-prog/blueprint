@@ -1,0 +1,95 @@
+{
+  "A$C4E30782E": {
+    "type": "arm_wheels", "label": "워밍암", "count": 1,
+    "reason": "L-007 워밍암 인출선과 나란한 원형 회전판 두 개가 일치한다.",
+    "outline_m": [1.168, 0.835], "key_dimensions_m": {"wheel_diameter": 0.55}
+  },
+  "A$C1E7028CC": {
+    "type": "waist_swing", "label": "스윙웨이스트", "count": 1,
+    "reason": "L-007 스윙웨이스트 인출선이 양쪽 사각 발판과 중앙 축이 그려진 블록을 가리킨다.",
+    "outline_m": [1.442, 0.795], "key_dimensions_m": {"platform_width": 0.39}
+  },
+  "A$C30DE750E": {
+    "type": "exercise_cycle", "label": "사이클", "count": 1,
+    "reason": "L-007 사이클 인출선과 안장, 손잡이, 패달 하위 블록의 위치가 일치한다.",
+    "outline_m": [1.012, 0.374], "key_dimensions_m": {"handlebar_width": 0.37}
+  },
+  "A$C5DE52F67": {
+    "type": "waist_twist", "label": "트위스트", "count": 1,
+    "reason": "L-007 트위스트 인출선과 벌어진 손잡이 안쪽의 원형 발판 두 개가 일치한다.",
+    "outline_m": [1.221, 0.800], "key_dimensions_m": {"disc_diameter": 0.33}
+  },
+  "A$C4F372E3B": {
+    "type": "exercise_stepper", "label": "스텝퍼", "count": 1,
+    "reason": "L-007 스텝퍼 인출선과 발판 두 쌍에 반복되는 미끄럼 방지 홈이 일치한다.",
+    "outline_m": [1.276, 0.788], "key_dimensions_m": {"pedal_length": 0.34}
+  },
+  "A$C6C686A11": {
+    "type": "information_sign", "label": "안내판", "count": 1,
+    "reason": "L-007 안내판 인출선 끝에 좁은 판재와 받침 한 개가 그려져 있다.",
+    "outline_m": [0.603, 0.168], "key_dimensions_m": {"panel_width": 0.60}
+  },
+  "A$C2FBC2D2E": {
+    "type": "noticeboard", "label": "게시판", "count": 1,
+    "reason": "L-007 게시판 인출선 끝의 긴 판재 양끝에 받침 두 개가 그려져 있다.",
+    "outline_m": [1.404, 0.163], "key_dimensions_m": {"panel_width": 1.40, "post_spacing": 1.14}
+  },
+  "A$C6CED45A6": {
+    "type": "hip_roof_shelter", "label": "파고라", "count": 1,
+    "reason": "L-007 파고라 인출선과 정사각 처마에서 중앙으로 모이는 네 개의 추녀마루가 일치한다.",
+    "outline_m": [4.200, 4.200], "key_dimensions_m": {"eave_width": 4.20, "eave_depth": 4.20}
+  },
+  "A$C5CAA3681": {
+    "type": "backed_bench", "label": "등의자", "count": 4,
+    "reason": "L-007 등의자 수량이 양팔걸이와 평행 슬랫이 그려진 블록 네 개와 일치한다.",
+    "outline_m": [1.523, 0.677], "key_dimensions_m": {"wood_slats_length": 1.42}
+  },
+  "A$C00990124": {
+    "type": "double_swing", "label": "2인 그네", "count": 1,
+    "reason": "L-007 그네 인출선이 A형 지지대 사이의 한 빔과 두 좌석을 가리킨다.",
+    "outline_m": [7.200, 3.880], "key_dimensions_m": {"swing_frame_width": 1.68, "swing_frame_length": 3.87, "seat_spacing": 1.20, "side_rail_center_spacing": 6.90}
+  },
+  "A$C69525F90": {
+    "type": "play_tower_b", "label": "조합놀이대 B", "count": 1,
+    "reason": "L-007 조합놀이대 B 인출선이 타워, 직선 미끄럼틀, 계단과 사다리가 그려진 블록을 가리킨다.",
+    "outline_m": [7.260, 6.710], "physical_m": [4.800, 3.800],
+    "key_dimensions_m": {"roof_width": 1.65, "roof_depth": 1.35, "slide_run": 2.05, "slide_width": 0.56},
+    "safety_paths": [518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536]
+  },
+  "A$C491C4D06": {
+    "type": "spring_rider", "label": "흔들놀이 A·B", "count": 2,
+    "reason": "L-007 흔들놀이 A와 B 인출선이 각각 둥근 안전영역 안의 작은 좌석을 가리킨다.",
+    "outline_m": [2.492, 2.879], "physical_m": [0.481, 0.639],
+    "key_dimensions_m": {"handle_span": 0.48, "body_length": 0.64},
+    "safety_paths": [0, 1, 2, 3, 4, 5, 6, 7]
+  },
+  "df": {
+    "type": "play_towers_a", "label": "조합놀이대 A", "count": 1,
+    "reason": "L-007 조합놀이대 A 인출선이 두 데크, 연결교와 여러 진입부가 그려진 블록을 가리킨다.",
+    "outline_m": [14.490, 8.370], "physical_m": [9.980, 4.980],
+    "key_dimensions_m": {"bridge_span": 2.02, "bridge_width": 0.76, "diagonal_slide_run": 2.80, "shelter_width": 1.22},
+    "safety_paths": [5, 6, 83, 84, 86, 88, 89, 98, 99, 174, 195, 196, 200, 206, 207, 209, 210, 212, 326, 342, 343, 358, 360, 361, 363, 364]
+  },
+  "rusrdyry": {
+    "type": "seesaw", "label": "시소", "count": 1,
+    "reason": "L-007 시소 인출선과 중앙 받침 양쪽의 좌석 및 T형 손잡이가 일치한다.",
+    "outline_m": [4.880, 2.470], "physical_m": [2.880, 0.480],
+    "key_dimensions_m": {"seat_spacing": 2.45, "handle_span": 0.48},
+    "safety_paths": [0, 1, 2, 3, 4, 5, 6, 7]
+  },
+  "A$C2FD52CB7": {
+    "type": "round_bin", "label": "원통형 휴지통 추정", "count": 2,
+    "reason": "바깥지름 1 m의 동심 호 세 겹과 중앙 심벌이 반복되며 용도를 확인할 인출선이 없다.",
+    "outline_m": [1.000, 1.000], "key_dimensions_m": {"outer_diameter": 1.00, "middle_diameter": 0.76, "inner_diameter": 0.52}
+  },
+  "A$C2D1D4835": {
+    "type": "picnic_table", "label": "야외테이블", "count": 2,
+    "reason": "L-007 야외테이블 인출선과 휴게 타원 안에서 나란히 그려진 슬랫형 INSERT 두 개가 일치한다.",
+    "outline_m": [2.080, 1.600], "key_dimensions_m": {"seat_width": 0.35, "tabletop_width": 0.72, "slat_length": 1.60}
+  },
+  "A$C7A0D55FF": {
+    "type": "drinking_fountain", "label": "음수전", "count": 1,
+    "reason": "L-007 음수전 인출선, 급수관 끝과 버블러 top 하위 블록 두 개가 일치한다.",
+    "outline_m": [1.107, 0.931], "key_dimensions_m": {"basin_diameter": 0.36, "basin_spacing": 0.74}
+  }
+}
